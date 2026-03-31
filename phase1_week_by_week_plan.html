@@ -1,0 +1,468 @@
+
+<style>
+  .wp { padding: 1rem 0; font-family: var(--font-sans); }
+  .top-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .month-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all .15s; }
+  .month-btn.active { background: var(--color-text-primary); color: var(--color-background-primary); border-color: transparent; }
+  .week-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 8px; overflow: hidden; }
+  .wh { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; user-select: none; }
+  .wnum { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .wtitle { font-size: 14px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+  .wtime { font-size: 11px; color: var(--color-text-tertiary); flex-shrink: 0; }
+  .chev { font-size: 10px; color: var(--color-text-tertiary); transition: transform .2s; }
+  .chev.open { transform: rotate(90deg); }
+  .wb { display: none; padding: 0 14px 12px; }
+  .wb.open { display: block; }
+  .day-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+  .day-label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); min-width: 32px; padding-top: 3px; }
+  .day-tasks { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+  .task { font-size: 12px; padding: 3px 8px; border-radius: var(--border-radius-md); }
+  .t-net { background: #E6F1FB; color: #0C447C; }
+  .t-py  { background: #E1F5EE; color: #085041; }
+  .t-dsa { background: #EEEDFE; color: #3C3489; }
+  .t-proj{ background: #FAEEDA; color: #633806; }
+  .t-rev { background: #F1EFE8; color: #444441; }
+  .proj-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); padding: 8px 10px; margin-top: 8px; }
+  .proj-title { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .proj-desc { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .tip-box { border-left: 2px solid var(--color-border-info); padding: 6px 10px; margin-top: 8px; border-radius: 0; }
+  .tip-text { font-size: 12px; color: var(--color-text-secondary); }
+  .action-btn { display: inline-block; margin-top: 8px; font-size: 12px; padding: 6px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-primary); cursor: pointer; }
+  .action-btn:hover { background: var(--color-background-secondary); }
+  .done-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--color-border-secondary); background: transparent; cursor: pointer; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all .15s; }
+  .done-check.checked { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .leg { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--color-text-secondary); }
+  .leg-dot { width: 9px; height: 9px; border-radius: 2px; }
+  .progress-wrap { margin-bottom: 16px; }
+  .prog-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .prog-bar { height: 5px; background: var(--color-border-tertiary); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; background: #1D9E75; transition: width .3s; }
+  .hidden { display: none; }
+</style>
+
+<div class="wp">
+  <div style="font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Phase 1 — 16-week study plan</div>
+  <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px">~1.5 hrs/day on weekdays · 3 hrs on weekends · tap a week to expand</div>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#B5D4F4"></div>Networking</div>
+    <div class="leg"><div class="leg-dot" style="background:#9FE1CB"></div>Python</div>
+    <div class="leg"><div class="leg-dot" style="background:#CECBF6"></div>DSA</div>
+    <div class="leg"><div class="leg-dot" style="background:#FAC775"></div>Project</div>
+    <div class="leg"><div class="leg-dot" style="background:#D3D1C7"></div>Review</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="prog-label"><span>Overall progress</span><span id="prog-pct">0 / 16 weeks</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="top-bar">
+    <button class="month-btn active" onclick="showMonth(0,this)">Month 1</button>
+    <button class="month-btn" onclick="showMonth(1,this)">Month 2</button>
+    <button class="month-btn" onclick="showMonth(2,this)">Month 3</button>
+    <button class="month-btn" onclick="showMonth(3,this)">Month 4</button>
+  </div>
+
+  <div id="month-0">
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w1')">
+        <input type="checkbox" class="done-check" id="ck1" onclick="event.stopPropagation();markDone(1)" title="Mark complete">
+        <span class="wnum t-net">Week 1</span>
+        <span class="wtitle">How the internet actually works</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw1">▶</span>
+      </div>
+      <div class="wb" id="w1">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">OSI model — 7 layers explained</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">TCP/IP model vs OSI</span><span class="task t-py">Install Python + VS Code</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">How packets travel (encapsulation)</span><span class="task t-dsa">What is an algorithm? Big-O intro</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: variables, print, input</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-rev">Review OSI + write notes</span><span class="task t-dsa">O(n) vs O(1) — practice examples</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: if/else, for loops, while loops</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Mini task: draw OSI model from memory</span></div></div>
+        <div class="tip-box"><div class="tip-text">Free resource: Professor Messer's Network+ videos (YouTube) — watch OSI playlist. For Python: Python.org official tutorial.</div></div>
+        <button class="action-btn" onclick="sendPrompt('Explain the OSI model in simple terms with a real-world example for each layer')">Explain OSI model ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w2')">
+        <input type="checkbox" class="done-check" id="ck2" onclick="event.stopPropagation();markDone(2)" title="Mark complete">
+        <span class="wnum t-net">Week 2</span>
+        <span class="wtitle">IP addresses &amp; subnetting</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw2">▶</span>
+      </div>
+      <div class="wb" id="w2">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">IPv4 structure — classes A/B/C</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">Subnet masks &amp; CIDR notation</span><span class="task t-py">Python: lists and list operations</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">Practice: calculate 10 subnets by hand</span><span class="task t-dsa">Arrays — indexing, slicing in Python</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: functions — define and call</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Private vs public IPs, NAT concept</span><span class="task t-dsa">Linear search algorithm — code it</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: dictionaries and sets</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: subnet calculator in Python</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Weekend project: Subnet calculator</div>
+          <div class="proj-desc">Take an IP + subnet mask as input, calculate network address, broadcast, and usable hosts. Uses functions + binary math.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Help me write a subnet calculator in Python step by step')">Build subnet calculator ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w3')">
+        <input type="checkbox" class="done-check" id="ck3" onclick="event.stopPropagation();markDone(3)" title="Mark complete">
+        <span class="wnum t-net">Week 3</span>
+        <span class="wtitle">DNS, DHCP &amp; how websites load</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw3">▶</span>
+      </div>
+      <div class="wb" id="w3">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">How DNS works — resolution process</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">DHCP — how IPs are assigned</span><span class="task t-py">Python: try/except error handling</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">HTTP vs HTTPS — request/response</span><span class="task t-dsa">Stacks — push/pop, use cases</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: reading/writing files</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Use nslookup and dig commands</span><span class="task t-dsa">Queues — enqueue/dequeue in Python</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: modules — import os, sys, socket</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: DNS lookup tool in Python</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Weekend project: DNS lookup tool</div>
+          <div class="proj-desc">Use Python's <code>socket.gethostbyname()</code> to resolve domain names. Accept a list of domains from a file and print results.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('How does DNS resolution work step by step when I type google.com in my browser?')">How DNS works ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w4')">
+        <input type="checkbox" class="done-check" id="ck4" onclick="event.stopPropagation();markDone(4)" title="Mark complete">
+        <span class="wnum t-rev">Week 4</span>
+        <span class="wtitle">Review + first real project</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw4">▶</span>
+      </div>
+      <div class="wb" id="w4">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-rev">Review weeks 1–3 notes</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">Cisco Packet Tracer — first lab setup</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-py">Python: clean up all week 1-3 code</span><span class="task t-dsa">Implement stack &amp; queue from scratch</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-net">Packet Tracer: connect 2 PCs via switch</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-proj">Project: network pinger (start)</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-proj">Project: network pinger (finish + test)</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Push project to GitHub — first commit!</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Month 1 project: Network pinger</div>
+          <div class="proj-desc">Python script that reads IPs from a file, pings each one, and saves results to a report. Your first GitHub portfolio piece.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Write me a complete Python network pinger script that reads IPs from a file and saves results')">Get pinger code ↗</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="month-1" class="hidden">
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w5')">
+        <input type="checkbox" class="done-check" id="ck5" onclick="event.stopPropagation();markDone(5)" title="Mark complete">
+        <span class="wnum t-net">Week 5</span>
+        <span class="wtitle">Routers, switches &amp; VLANs</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw5">▶</span>
+      </div>
+      <div class="wb" id="w5">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">How routers work — routing tables</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">Switches vs hubs — MAC address table</span><span class="task t-py">Python: classes and objects (OOP intro)</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">VLANs — why &amp; how to configure</span><span class="task t-dsa">Linked lists — concept &amp; implementation</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: inheritance and methods</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Packet Tracer: VLAN lab</span><span class="task t-dsa">Linked list: insert, delete, traverse</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: pip packages — install requests</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: Python class for a Network Device</span></div></div>
+        <button class="action-btn" onclick="sendPrompt('Explain VLANs with a real office network example and how to configure them in Cisco')">VLANs explained ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w6')">
+        <input type="checkbox" class="done-check" id="ck6" onclick="event.stopPropagation();markDone(6)" title="Mark complete">
+        <span class="wnum t-net">Week 6</span>
+        <span class="wtitle">TCP vs UDP &amp; port numbers</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw6">▶</span>
+      </div>
+      <div class="wb" id="w6">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">TCP 3-way handshake in depth</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">UDP — when speed beats reliability</span><span class="task t-py">Python: socket programming — TCP client</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">Common ports: 80, 443, 22, 53, 25</span><span class="task t-dsa">Binary search — code it in Python</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: socket TCP server — echo server</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Wireshark: capture and read packets</span><span class="task t-dsa">Bubble sort — understand &amp; code</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: UDP socket example</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: port scanner in Python</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Weekend project: Port scanner</div>
+          <div class="proj-desc">Use Python sockets to check which ports are open on a given IP. Applies TCP knowledge + loops + error handling.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Help me write a simple TCP port scanner in Python using sockets')">Build port scanner ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w7')">
+        <input type="checkbox" class="done-check" id="ck7" onclick="event.stopPropagation();markDone(7)" title="Mark complete">
+        <span class="wnum t-dsa">Week 7</span>
+        <span class="wtitle">Routing protocols &amp; graph theory</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw7">▶</span>
+      </div>
+      <div class="wb" id="w7">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">Static routing vs dynamic routing</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">RIP, OSPF overview</span><span class="task t-dsa">Graphs: nodes, edges, adjacency list</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-dsa">BFS algorithm — code it in Python</span><span class="task t-net">How OSPF uses graph algorithms</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-dsa">DFS algorithm — code it in Python</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-dsa">Dijkstra's algorithm — concept</span><span class="task t-net">Packet Tracer: static routing lab</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-dsa">Dijkstra's algorithm — code it step by step</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: find shortest path in a network graph</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Weekend project: Network path finder</div>
+          <div class="proj-desc">Represent a small network as a graph in Python. Use Dijkstra to find the shortest path between two routers. This directly mirrors OSPF.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Explain Dijkstra algorithm and show me how it relates to OSPF routing with a Python example')">Dijkstra + OSPF ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w8')">
+        <input type="checkbox" class="done-check" id="ck8" onclick="event.stopPropagation();markDone(8)" title="Mark complete">
+        <span class="wnum t-rev">Week 8</span>
+        <span class="wtitle">Review + CCNA prep &amp; mock test</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw8">▶</span>
+      </div>
+      <div class="wb" id="w8">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-rev">Review weeks 5–7 notes &amp; flashcards</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">Take 50-question CCNA practice test</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-dsa">Solve 5 LeetCode easy problems</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Refactor port scanner — add threading</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Identify weak CCNA topics — study those</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-proj">Combine pinger + port scanner into one tool</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Update GitHub README with project docs</span></div></div>
+        <div class="tip-box"><div class="tip-text">Free CCNA practice tests: examtopics.com, 9tut.com. Target score 70%+ before moving on.</div></div>
+        <button class="action-btn" onclick="sendPrompt('Give me 10 CCNA practice questions on routing and switching with answers explained')">CCNA practice Qs ↗</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="month-2" class="hidden">
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w9')">
+        <input type="checkbox" class="done-check" id="ck9" onclick="event.stopPropagation();markDone(9)" title="Mark complete">
+        <span class="wnum t-net">Week 9</span>
+        <span class="wtitle">Network security basics</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw9">▶</span>
+      </div>
+      <div class="wb" id="w9">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">Firewalls — stateful vs stateless</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">ACLs — access control lists in Cisco</span><span class="task t-py">Python: argparse — command line tools</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">VPN — how tunnels work</span><span class="task t-dsa">Hash tables — concept &amp; Python dicts</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: subprocess module — run OS commands</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Packet Tracer: firewall ACL lab</span><span class="task t-dsa">Hash table collision handling</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: logging module — add logs to tools</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: ACL rule checker script</span></div></div>
+        <button class="action-btn" onclick="sendPrompt('Explain how firewall ACLs work in Cisco with examples of allow and deny rules')">ACLs explained ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w10')">
+        <input type="checkbox" class="done-check" id="ck10" onclick="event.stopPropagation();markDone(10)" title="Mark complete">
+        <span class="wnum t-py">Week 10</span>
+        <span class="wtitle">Python networking libraries</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw10">▶</span>
+      </div>
+      <div class="wb" id="w10">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-py">Install &amp; learn netmiko basics</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-py">netmiko: SSH into Cisco device (GNS3)</span><span class="task t-net">Set up GNS3 with Cisco IOS image</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-py">netmiko: send commands, read output</span><span class="task t-dsa">Trees — binary tree concept</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: parse router output with regex</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-py">netmiko: push config to multiple devices</span><span class="task t-dsa">Binary tree: insert &amp; traversal</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Learn Scapy: create a ping packet manually</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: auto backup router configs to files</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Weekend project: Config backup tool</div>
+          <div class="proj-desc">Use netmiko to SSH into routers in your GNS3 lab, run <code>show running-config</code>, and save output to timestamped files.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Show me a complete netmiko script to SSH into a Cisco router and save the running config to a file')">Netmiko backup script ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w11')">
+        <input type="checkbox" class="done-check" id="ck11" onclick="event.stopPropagation();markDone(11)" title="Mark complete">
+        <span class="wnum t-dsa">Week 11</span>
+        <span class="wtitle">Algorithms that power networks</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw11">▶</span>
+      </div>
+      <div class="wb" id="w11">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-dsa">Spanning tree algorithm (STP concept)</span><span class="task t-net">How STP prevents network loops</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-dsa">Minimum spanning tree — Prim's algorithm</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-dsa">Code Prim's algorithm in Python</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-dsa">Solve 3 LeetCode graph problems</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Packet Tracer: STP lab — observe root bridge</span><span class="task t-dsa">Heap data structure — concept</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: visualise graph with networkx library</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: visualise network topology with networkx</span></div></div>
+        <button class="action-btn" onclick="sendPrompt('How does the Spanning Tree Protocol (STP) work and what algorithm is behind it?')">STP + algorithm ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w12')">
+        <input type="checkbox" class="done-check" id="ck12" onclick="event.stopPropagation();markDone(12)" title="Mark complete">
+        <span class="wnum t-rev">Week 12</span>
+        <span class="wtitle">Review + mid-point project</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw12">▶</span>
+      </div>
+      <div class="wb" id="w12">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-rev">Review all networking topics weeks 1–11</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">Take full CCNA mock exam (100 questions)</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-dsa">Solve 5 LeetCode problems (arrays + graphs)</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Refactor all Python projects — clean code</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-proj">Mid-point project: start network audit tool</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-proj">Mid-point project: finish &amp; test</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Push everything to GitHub with good READMEs</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Month 3 project: Network audit tool</div>
+          <div class="proj-desc">Python script that takes a list of devices, SSH's in, checks interface status, and generates a health report. Combines netmiko + file I/O + data structures.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Help me build a network audit tool in Python using netmiko that checks device interface status')">Build audit tool ↗</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="month-3" class="hidden">
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w13')">
+        <input type="checkbox" class="done-check" id="ck13" onclick="event.stopPropagation();markDone(13)" title="Mark complete">
+        <span class="wnum t-net">Week 13</span>
+        <span class="wtitle">Cloud networking intro &amp; IPv6</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw13">▶</span>
+      </div>
+      <div class="wb" id="w13">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-net">IPv6 — why it exists, address format</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-net">Cloud networking: VPC, subnets in AWS</span><span class="task t-py">Python: boto3 — AWS SDK basics</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-net">Security groups vs NACLs in AWS</span><span class="task t-dsa">Tries — prefix matching (like DNS lookup)</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: make AWS API call with boto3</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-net">Create free AWS account — explore VPC</span><span class="task t-dsa">Trie: insert and search words</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: list AWS VPC info with boto3</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: Python script to list AWS security groups</span></div></div>
+        <button class="action-btn" onclick="sendPrompt('What is a VPC in AWS and how is it similar to a traditional office network?')">AWS VPC explained ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w14')">
+        <input type="checkbox" class="done-check" id="ck14" onclick="event.stopPropagation();markDone(14)" title="Mark complete">
+        <span class="wnum t-py">Week 14</span>
+        <span class="wtitle">APIs, JSON &amp; network data</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw14">▶</span>
+      </div>
+      <div class="wb" id="w14">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-py">REST APIs — GET, POST, JSON responses</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-py">Python requests: call a public API</span><span class="task t-net">Network APIs — Cisco DNA Center intro</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-py">Parse JSON network data in Python</span><span class="task t-dsa">Sorting algorithms — merge sort</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-py">Python: SNMP with pysnmp library</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-py">Fetch live network data via API</span><span class="task t-dsa">Quick sort — code &amp; compare to merge sort</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-py">Python: schedule tasks with schedule library</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Build: SNMP poller — collect device CPU stats</span></div></div>
+        <button class="action-btn" onclick="sendPrompt('How do I use Python to poll network device stats using SNMP with pysnmp?')">SNMP with Python ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w15')">
+        <input type="checkbox" class="done-check" id="ck15" onclick="event.stopPropagation();markDone(15)" title="Mark complete">
+        <span class="wnum t-dsa">Week 15</span>
+        <span class="wtitle">LeetCode + interview prep</span>
+        <span class="wtime">~10 hrs</span>
+        <span class="chev" id="chw15">▶</span>
+      </div>
+      <div class="wb" id="w15">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-dsa">LeetCode: 3 array problems (easy)</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-dsa">LeetCode: 3 string problems (easy)</span><span class="task t-py">Python: write clean, documented code</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-dsa">LeetCode: 2 graph problems (easy/medium)</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-net">Practice: explain networking concepts out loud</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-dsa">LeetCode: 2 stack/queue problems</span><span class="task t-net">Mock technical interview — OSI + TCP</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-rev">Review all DSA topics — write cheat sheet</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Polish all GitHub projects + write READMEs</span></div></div>
+        <button class="action-btn" onclick="sendPrompt('Give me 5 networking interview questions a junior network engineer should be able to answer')">Interview questions ↗</button>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="wh" onclick="tog('w16')">
+        <input type="checkbox" class="done-check" id="ck16" onclick="event.stopPropagation();markDone(16)" title="Mark complete">
+        <span class="wnum t-proj">Week 16</span>
+        <span class="wtitle">Final project — showcase everything</span>
+        <span class="wtime">~12 hrs</span>
+        <span class="chev" id="chw16">▶</span>
+      </div>
+      <div class="wb" id="w16">
+        <div class="day-row"><span class="day-label">Mon</span><div class="day-tasks"><span class="task t-proj">Plan final project: network monitoring dashboard</span></div></div>
+        <div class="day-row"><span class="day-label">Tue</span><div class="day-tasks"><span class="task t-proj">Build: SNMP polling backend in Python</span></div></div>
+        <div class="day-row"><span class="day-label">Wed</span><div class="day-tasks"><span class="task t-proj">Build: store data in SQLite database</span></div></div>
+        <div class="day-row"><span class="day-label">Thu</span><div class="day-tasks"><span class="task t-proj">Build: Flask web server to serve data</span></div></div>
+        <div class="day-row"><span class="day-label">Fri</span><div class="day-tasks"><span class="task t-proj">Build: HTML page showing live stats</span></div></div>
+        <div class="day-row"><span class="day-label">Sat</span><div class="day-tasks"><span class="task t-proj">Test full system — fix bugs</span></div></div>
+        <div class="day-row"><span class="day-label">Sun</span><div class="day-tasks"><span class="task t-proj">Deploy to GitHub + write full README + celebrate!</span></div></div>
+        <div class="proj-box">
+          <div class="proj-title">Phase 1 final project: Live network dashboard</div>
+          <div class="proj-desc">Python + Flask + SQLite + SNMP. Polls devices, stores history, shows live stats in a browser. This single project demonstrates networking knowledge, Python skill, and data structures — all in one. This is your Phase 1 graduation project.</div>
+        </div>
+        <button class="action-btn" onclick="sendPrompt('Help me build a network monitoring dashboard with Python Flask, SQLite and SNMP from scratch')">Build the dashboard ↗</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script>
+var checked = {};
+function tog(id) {
+  var b = document.getElementById(id);
+  var cid = 'chw' + id.replace('w','');
+  var c = document.getElementById(cid);
+  var o = b.classList.contains('open');
+  b.classList.toggle('open', !o);
+  if(c) c.classList.toggle('open', !o);
+}
+function showMonth(n, btn) {
+  for(var i=0;i<4;i++) {
+    var el = document.getElementById('month-'+i);
+    if(el) el.classList.toggle('hidden', i!==n);
+  }
+  document.querySelectorAll('.month-btn').forEach(function(b,i){ b.classList.toggle('active', i===n); });
+}
+function markDone(n) {
+  var el = document.getElementById('ck'+n);
+  checked[n] = el.classList.toggle('checked');
+  el.textContent = checked[n] ? '✓' : '';
+  updateProgress();
+}
+function updateProgress() {
+  var done = Object.values(checked).filter(Boolean).length;
+  var pct = Math.round((done/16)*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-pct').textContent = done + ' / 16 weeks';
+}
+</script>
